@@ -14,13 +14,14 @@ app.use(express.json()); // to parse JSON bodies
 // Routes
 const adminRoutes = require('./routes/adminRoutes');
 const authRoutes = require('./routes/authRoutes');
-const submissionRoutes = require('./routes/submissionRoutes'); // ✅ FIX: Import missing
+const submissionRoutes = require('./routes/submissionRoutes');
+const userRoutes = require('./routes/userRoutes'); // ✅ FIX: Import missing
 
 // Use Routes
 app.use('/api/admin', adminRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api', submissionRoutes); // Contains: /submit/:id, /user
-
+app.use('/api/user', userRoutes);
 // Root route
 app.get('/', (req, res) => {
   res.send('API is running...');

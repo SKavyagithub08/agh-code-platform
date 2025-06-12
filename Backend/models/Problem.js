@@ -51,4 +51,4 @@ const problemSchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
-module.exports = mongoose.model('Problem_AGH', problemSchema);
+module.exports = mongoose.model('problems', problemSchema);
