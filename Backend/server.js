@@ -13,13 +13,13 @@ app.use(express.json()); // to parse JSON bodies
 
 // Routes
 const adminRoutes = require('./routes/adminRoutes');
-app.use('/api/admin', adminRoutes);
-
-
-
 const authRoutes = require('./routes/authRoutes');
-app.use('/api/auth', authRoutes);
+const submissionRoutes = require('./routes/submissionRoutes'); // ✅ FIX: Import missing
 
+// Use Routes
+app.use('/api/admin', adminRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api', submissionRoutes); // Contains: /submit/:id, /user
 
 // Root route
 app.get('/', (req, res) => {
@@ -29,5 +29,5 @@ app.get('/', (req, res) => {
 // Port
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`✅ Server running on port ${PORT}`);
 });

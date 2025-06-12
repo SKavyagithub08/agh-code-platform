@@ -20,10 +20,10 @@ const submissionSchema = new mongoose.Schema({
     required: true
   },
   verdict: {
-    type: String,
-    enum: ['Accepted', 'Wrong Answer', 'Runtime Error', 'Compilation Error', 'Time Limit Exceeded'],
-    default: 'Pending'
-  },
+  type: String,
+  enum: ['Pending', 'Accepted', 'Wrong Answer', 'Runtime Error', 'Compilation Error', 'Time Limit Exceeded'],
+  default: 'Pending'
+},
   output: {
     type: String
   },
