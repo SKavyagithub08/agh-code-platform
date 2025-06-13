@@ -15,6 +15,38 @@ const languageMap = {
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
+const updateUserStreak = async (userId, problemId) => {
+  const user = await User.findById(userId);
+  if (!user) return;
+
+  // Only add to solvedProblems if not already added
+  if (!user.solvedProblems.includes(problemId)) {
+    user.solvedProblems.push(problemId);
+  }
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const lastSolved = user.lastSolvedDate ? new Date(user.lastSolvedDate) : null;
+  if (lastSolved) lastSolved.setHours(0, 0, 0, 0);
+
+  if (lastSolved && today.getTime() === lastSolved.getTime()) {
+    // Already solved today – don't increment streak again
+    await user.save(); // save solvedProblems if newly added
+    return;
+  }
+
+  if (lastSolved && today.getTime() - lastSolved.getTime() === 86400000) {
+    user.currentStreak += 1; // continued streak
+  } else {
+    user.currentStreak = 1; // new streak
+  }
+
+  user.maxStreak = Math.max(user.maxStreak, user.currentStreak);
+  user.lastSolvedDate = new Date();
+  await user.save();
+};
+
 const submitCode = async (req, res) => {
   const { code, language } = req.body;
   const problemId = req.params.id;
@@ -73,21 +105,15 @@ const submitCode = async (req, res) => {
         verdict
       });
 
-      await sleep(1000); // Avoid API rate limits
+      await sleep(1000); // Avoid rate limit
     }
 
-const overallVerdict = allPassed ? 'Accepted' : 'Wrong Answer';
+    const overallVerdict = allPassed ? 'Accepted' : 'Wrong Answer';
 
-// ✅ Update user's solvedProblems only if it's a new "Accepted"
-if (overallVerdict === 'Accepted') {
-  const user = await User.findById(userId);
-  const alreadySolved = user.solvedProblems.includes(problemId.toString());
-  
-  if (!alreadySolved) {
-    user.solvedProblems.push(problemId);
-    await user.save();
-  }
-}
+    // ✅ Update solvedProblems and streak
+    if (overallVerdict === 'Accepted') {
+      await updateUserStreak(userId, problemId);
+    }
 
     const submission = await Submission.create({
       user: userId,

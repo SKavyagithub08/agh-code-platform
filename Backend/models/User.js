@@ -6,8 +6,12 @@ const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   role: { type: String, enum: ['user', 'admin'], default: 'user' },
-  solvedProblems: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Problem' }]
-}, { timestamps: true });
+  solvedProblems: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Problem' }],
+  currentStreak: { type: Number, default: 0 },
+  maxStreak: { type: Number, default: 0 },
+  lastSolvedDate: { type: Date }
+});
+
 
 // Encrypt password before saving
 userSchema.pre('save', async function (next) {
