@@ -1,14 +1,15 @@
-const Problem = require('../models/Problem_AGH');
+const Problem = require('../models/Problem');
 
-const getProblemById = async (req, res) => {
+const getProblemByName = async (req, res) => {
   try {
-    const problem = await Problem.findById(req.params.id);
+    const problem = await Problem.find({ title: req.params.name });
     if (!problem) return res.status(404).json({ message: 'Problem not found' });
     res.json(problem);
   } catch (error) {
     res.status(500).json({ message: 'Error fetching problem', error: error.message });
   }
 };
+
 
 const getProblemsBySection = async (req, res) => {
   try {
@@ -19,4 +20,4 @@ const getProblemsBySection = async (req, res) => {
   }
 };
 
-module.exports = { getProblemById, getProblemsBySection };
+module.exports = { getProblemByName, getProblemsBySection };
