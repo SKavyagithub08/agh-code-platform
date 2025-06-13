@@ -1,11 +1,13 @@
 const express = require('express');
 const router = express.Router();
-const { getProblemByName, getProblemsBySection } = require('../controllers/problemController');
+const {
+  getProblemByName,
+  getProblemsBySection,
+  getFilteredProblems
+} = require('../controllers/problemController');
 
-// ✅ Specific route first
+router.get('/name/:name', getProblemByName);
 router.get('/section/:sectionName', getProblemsBySection);
-
-// ✅ Generic route after
-router.get('/:name', getProblemByName);
+router.get('/filter', getFilteredProblems); // ✅ important
 
 module.exports = router;
