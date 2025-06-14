@@ -23,7 +23,7 @@ const getProblemByName = async (req, res) => {
   }
 };
 
-// ✅ Get all problems by section (case-insensitive)
+// ✅ Get problems by section (case-insensitive)
 const getProblemsBySection = async (req, res) => {
   try {
     const sectionName = req.params.sectionName?.trim();
@@ -35,6 +35,10 @@ const getProblemsBySection = async (req, res) => {
       section: new RegExp(sectionName, 'i')
     });
 
+    if (!problems.length) {
+      return res.status(404).json({ message: 'No problems found in this section' });
+    }
+
     res.status(200).json(problems);
   } catch (error) {
     res.status(500).json({
@@ -44,10 +48,35 @@ const getProblemsBySection = async (req, res) => {
   }
 };
 
-// ✅ Filter problems by title, difficulty, section, and optional sort
-const getFilteredProblems = async (req, res) => {
+// ✅ Get problems by difficulty (case-insensitive)
+const getProblemsByDifficulty = async (req, res) => {
   try {
-    const { title, difficulty, section, sort } = req.query;
+    const level = req.params.difficultyLevel?.trim();
+    if (!level) {
+      return res.status(400).json({ message: 'Difficulty level is required' });
+    }
+
+    const problems = await Problem.find({
+      difficulty: new RegExp(`^${level}$`, 'i')
+    });
+
+    if (!problems.length) {
+      return res.status(404).json({ message: 'No problems found for this difficulty' });
+    }
+
+    res.status(200).json(problems);
+  } catch (error) {
+    res.status(500).json({
+      message: 'Error fetching problems by difficulty',
+      error: error.message
+    });
+  }
+};
+
+// ✅ Path-param based filtering (title, difficulty, section in any combo)
+const getFilteredProblemsByParams = async (req, res) => {
+  try {
+    const { title, difficulty, section } = req.params;
     const query = {};
 
     if (title?.trim()) {
@@ -62,30 +91,16 @@ const getFilteredProblems = async (req, res) => {
       query.section = { $regex: section.trim(), $options: 'i' };
     }
 
-    // Sorting logic
-    let sortOption = {};
-    if (sort === 'difficultyAsc') {
-      sortOption.difficulty = 1;
-    } else if (sort === 'difficultyDesc') {
-      sortOption.difficulty = -1;
-    }
-
-    // 🔍 Debug log (remove in production)
-    console.log('[Filtered Search] Query:', query, '| Sort:', sortOption);
-
-    const problems = await Problem.find(query)
-      .sort(sortOption)
-      .select('-testCases'); // exclude testCases
+    const problems = await Problem.find(query).select('-testCases');
 
     if (!problems.length) {
-      return res.status(404).json({ message: 'No problems matched your filter.' });
+      return res.status(404).json({ message: 'No matching problems found' });
     }
 
     res.status(200).json(problems);
   } catch (error) {
-    console.error('Error filtering problems:', error);
     res.status(500).json({
-      message: 'Internal Server Error',
+      message: 'Error fetching filtered problems',
       error: error.message
     });
   }
@@ -94,5 +109,6 @@ const getFilteredProblems = async (req, res) => {
 module.exports = {
   getProblemByName,
   getProblemsBySection,
-  getFilteredProblems
+  getProblemsByDifficulty,
+  getFilteredProblemsByParams
 };
